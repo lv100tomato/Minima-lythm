@@ -23,6 +23,7 @@ public class FumenInfo : MonoBehaviour{
     public Text MissScore;
     public Text StatusText;
     public Text MultiIntervalText;
+    public Text AdjustTimingText;
 
     private AudioSource audioS;
     private bool first;
@@ -196,29 +197,6 @@ public class FumenInfo : MonoBehaviour{
     void Start()
     {
         audioS = GetComponent<AudioSource>();
-        /*
-        string karifumen =
-            "*---------------------- HEADER FIELD\n" +
-            "#PLAYER 1\n" +
-            "#GENRE Sample\n" +
-            "#TITLE Sample\n" +
-            "#ARTIST Sample\n" +
-            "#BPM 120\n" +
-            "#PLAYLEVEL 5\n" +
-            "#TOTAL 100\n" +
-            "#RANK 2\n" +
-            "#STAGEFILE aaa.bmp\n" +
-            "#bmp00 miss.bmp\n" +
-            "#bmp01 1.bmp\n" +
-            "#wav01 1.wav\n" +
-            "\n" +
-            "*----------------------MAIN DATA FIELD\n" +
-            "\n" +
-            "#00101:4F\n" +
-            "#00104:0102030401020304\n" +
-            "#00111:01010101\n" +
-            "#07115:D2";
-        */
         //FumenData.readData(karifumen);
         //FumenData.readNotesData(karifumen);
 
@@ -238,60 +216,6 @@ public class FumenInfo : MonoBehaviour{
         //StartCoroutine(LoadMusic(Application.streamingAssetsPath + "/ピアノ協奏曲第１番蠍火 (なんでも吸い込むピンク色のための).wav"));
         //StartCoroutine(LoadMusic(Application.streamingAssetsPath + "/ピアノ協奏曲第１番蠍火 (なんでも詰め込む神域譜面のための).wav"));
 
-        /*
-        Debug.Log("load start");
-        //LoadFumen();
-        //string ftxt = "";
-        FileInfo fi = new FileInfo(fumenName);
-        try
-        {
-            // 一行毎読み込み
-            using (StreamReader sr = new StreamReader(fi.OpenRead(), Encoding.UTF8))
-            {
-                ftxt = sr.ReadToEnd();
-            }
-        }
-        catch (Exception e)
-        {
-            // 改行コード
-            ftxt += "\n";
-            Debug.Log("読み込みに失敗しました");
-        }
-        */
-
-        //譜面を自動取得->ランダムに選ぶ
-        /*
-        string[] bmsFiles = System.IO.Directory.GetFiles(Application.streamingAssetsPath, "*.bms", System.IO.SearchOption.AllDirectories);
-        string[] bmeFiles = System.IO.Directory.GetFiles(Application.streamingAssetsPath, "*.bme", System.IO.SearchOption.AllDirectories);
-        string[] fumenFiles = bmsFiles.Concat(bmeFiles).ToArray();
-
-        //Debug.Log(fumenFiles[0]);
-
-        string[] musicFiles = new string[fumenFiles.Length];
-        for(int i = 0; i < musicFiles.Length; ++i)
-        {
-            //Debug.Log(fumenFiles[i]);
-            string place = fumenFiles[i].Substring(0, fumenFiles[i].LastIndexOf("\\"));
-            //Debug.Log(place);
-
-            string[] kouho = System.IO.Directory.GetFiles(place, "*.wav");
-            if (kouho.Length < 1) kouho = System.IO.Directory.GetFiles(place, "*.ogg");
-            if (kouho.Length < 1) kouho = System.IO.Directory.GetFiles(place, "*.mp3");
-
-            if (kouho.Length < 1)
-            {
-                musicFiles[i] = "";
-                Debug.LogWarning("Music File Not Found");
-            }
-            else musicFiles[i] = kouho[0];
-        }
-
-        int selection = UnityEngine.Random.Range(0, fumenFiles.Length - 1);
-        fumenName = fumenFiles[selection];
-        StartCoroutine(LoadMusic(musicFiles[selection]));
-        */
-        //
-
         FumenData.setLoadedFalse();
         StartCoroutine(FumenData.LoadFumen(fumenName));
         StartCoroutine(LoadMusic(musicName));
@@ -299,7 +223,7 @@ public class FumenInfo : MonoBehaviour{
         //while (ftxt == null) ;
 
         count = 0;
-        progress = 0 - interval;
+        progress = (interval > 0) ? 0 - interval : 0;
         ready = false;
         first = false;
         canHitQueue = new List<Note>();
@@ -324,7 +248,8 @@ public class FumenInfo : MonoBehaviour{
         StatusText.fontSize = 70;
         //StatusText.text = Application.streamingAssetsPath;
         //StatusText.fontSize = 30;
-        MultiIntervalText.text = "Speed\n   ↑\nx" + intervalMul + "\n   ↓";
+        updateMulti();
+        updateAdjust();
     }
 
     // Update is called once per frame
@@ -378,9 +303,9 @@ public class FumenInfo : MonoBehaviour{
 
                 if (outro < 5000) outro += (int)(Time.deltaTime * 1000);
                 else SceneManager.LoadScene("SelectMusic");
-                }
+            }
 
-            List<NoteInfo> hoge = FumenData.GetNotes(progress);
+            List<NoteInfo> hoge = FumenData.GetNotes(getProgress());
 
             foreach (NoteInfo i in hoge)
             {
@@ -417,19 +342,28 @@ public class FumenInfo : MonoBehaviour{
                 StatusText.fontSize = 0;
                 interval = (int)(intervalBase / intervalMul);
                 MultiIntervalText.text = "";
-                //MaxComboScore.text = FumenData.getMaxCombo().ToString();
-                //audioS.clip = Music;
-                //audioS.Play();
+                AdjustTimingText.text = "";
+                progress = (interval > 0) ? 0 - interval : 0;
             }
             else if (Input.GetKeyDown(KeyCode.UpArrow))
             {
                 if (intervalMul < 10) intervalMul += 0.1M;
-                MultiIntervalText.text = "Speed\n   ↑\nx" + intervalMul + "\n   ↓";
+                updateMulti();
             }
             else if (Input.GetKeyDown(KeyCode.DownArrow))
             {
                 if (intervalMul > 0.5M) intervalMul -= 0.1M;
-                MultiIntervalText.text = "Speed\n   ↑\nx" + intervalMul + "\n   ↓";
+                updateMulti();
+            }
+            else if (Input.GetKeyDown(KeyCode.RightArrow))
+            {
+                if (playerShift < 1000) playerShift += 1;
+                updateAdjust();
+            }
+            else if (Input.GetKeyDown(KeyCode.LeftArrow))
+            {
+                if (playerShift > -1000) playerShift -= 1;
+                updateAdjust();
             }
 
 
@@ -453,7 +387,7 @@ public class FumenInfo : MonoBehaviour{
 
     public int getProgress()
     {
-        return progress;
+        return progress - playerShift;
     }
 
     public void addNotesRank(int rank)
@@ -501,6 +435,16 @@ public class FumenInfo : MonoBehaviour{
 
         //Debug.Log("number of pushed : " + output);
         return output;
+    }
+
+    private void updateMulti()
+    {
+        MultiIntervalText.text = "Speed\n   ↑\nx" + intervalMul + "\n   ↓";
+    }
+
+    private void updateAdjust()
+    {
+        AdjustTimingText.text = "Timing\n←    →\n" + ((playerShift == 0) ? "±" : ((playerShift > 0) ? "+" : "")) + playerShift + "ms";
     }
 
 }
