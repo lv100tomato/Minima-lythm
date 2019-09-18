@@ -5,6 +5,17 @@ using UnityEngine.SceneManagement;
 
 public class SelectMusicButton : MonoBehaviour
 {
+    public enum Act
+    {
+        start,
+        option,
+        title,
+        back
+    }
+
+    public Act action;
+    public GameObject Manager;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -19,6 +30,19 @@ public class SelectMusicButton : MonoBehaviour
 
     public void OnClickButton()
     {
-        SceneManager.LoadScene("TitleScene");
+        switch (action)
+        {
+            case Act.start:
+                Manager.GetComponent<MusicManager>().moveToGameScene();
+                break;
+            case Act.option:
+                break;
+            case Act.title:
+                SceneManager.LoadScene("TitleScene");
+                break;
+            case Act.back:
+                Manager.GetComponent<MusicManager>().backToSelect();
+                break;
+        }
     }
 }
