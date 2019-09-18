@@ -8,25 +8,31 @@ using UnityEngine.SceneManagement;
 public class MusicManager : MonoBehaviour
 {
     public GameObject ButtonPref;
-    public GameObject ScrollPoint;
+    public GameObject ScrollView;
+    public GameObject KakuninBase;
+
+    private GameObject ScrollPoint;
 
     static private string[][] fumensAndMusics;
     static private string[] ButtonTexts;
     private GameObject[] Buttons;
     private int nowLoading;
+    private string selectedMusic;
+    private string selectedFumen;
 
     // Start is called before the first frame update
     void Start()
     {
         Screen.SetResolution(1280, 720, false, 60);
 
+        selectedMusic = "";
+        selectedFumen = "";
+
         if (fumensAndMusics == null) fumensAndMusics = FumenAndMusicNames();
 
+        ScrollPoint = ScrollView.transform.Find("Viewport").transform.Find("Content").gameObject;
         ScrollPoint.GetComponent<RectTransform>().sizeDelta = new Vector3(0, 120 * fumensAndMusics[0].Length);
 
-        //string[] fumenTitles = new string[fumensAndMusics[0].Length];
-        //int[] fumenDifficulties = new int[fumensAndMusics[0].Length];
-        //FumenInfo fInfo = new FumenInfo();
         nowLoading = 0;
         bool isFirst = ButtonTexts == null;
         if (isFirst) ButtonTexts = new string[fumensAndMusics[0].Length];
@@ -41,9 +47,7 @@ public class MusicManager : MonoBehaviour
 
             if (isFirst)
             {
-                //button.transform.GetComponentInChildren<Text>().text = "now loading...";
                 ButtonTexts[i] = " now loading...";
-                //button.transform.GetComponentInChildren<Text>().text = " " + FumenData.title + "\n LEVEL : " + FumenData.playlevel;
             }
             else
             {
@@ -67,12 +71,8 @@ public class MusicManager : MonoBehaviour
     {
         if(nowLoading < fumensAndMusics[0].Length)
         {
-            Debug.Log(fumensAndMusics[0][nowLoading] + " is Loading.");
-
             if (FumenData.isDataLoaded)
             {
-                Debug.Log(fumensAndMusics[0][nowLoading] + " is Loaded.");
-                //FumenInfo fInfo = new FumenInfo();
                 ButtonTexts[nowLoading] = " " + FumenData.title + "\n LEVEL : " + FumenData.playlevel;
                 Buttons[nowLoading].transform.GetComponentInChildren<Text>().text = ButtonTexts[nowLoading];
                 FumenData.setLoadedFalse();
@@ -92,7 +92,6 @@ public class MusicManager : MonoBehaviour
         for (int i = 0; i < fumenFiles.Count; ++i)
         {
             string place = fumenFiles[i].Substring(0, fumenFiles[i].LastIndexOf("\\"));
-            //Debug.Log(place);
 
             string[] kouho = System.IO.Directory.GetFiles(place, "*.wav");
             if (kouho.Length < 1) kouho = System.IO.Directory.GetFiles(place, "*.ogg");
@@ -123,8 +122,25 @@ public class MusicManager : MonoBehaviour
 
     public void startGame(int id)
     {
-        FumenInfo.SetFumenName(fumensAndMusics[0][id]);
-        FumenInfo.SetMusicName(fumensAndMusics[1][id]);
+        selectedFumen = fumensAndMusics[0][id];
+        selectedMusic = fumensAndMusics[1][id];
+
+        ScrollView.GetComponent<UIMover>().MoveTo(new Vector2(-1280, 0));
+        KakuninBase.GetComponent<UIMover>().MoveTo(new Vector2(0, 0));
+
+        KakuninBase.transform.Find("TitleAndLevel").gameObject.GetComponentInChildren<Text>().text = ButtonTexts[id];
+    }
+
+    public void backToSelect()
+    {
+        ScrollView.GetComponent<UIMover>().MoveReset();
+        KakuninBase.GetComponent<UIMover>().MoveReset();
+    }
+
+    public void moveToGameScene()
+    {
+        FumenInfo.SetFumenName(selectedFumen);
+        FumenInfo.SetMusicName(selectedMusic);
         SceneManager.LoadScene("Otoge");
     }
 }
