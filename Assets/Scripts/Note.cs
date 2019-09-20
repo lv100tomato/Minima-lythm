@@ -10,7 +10,7 @@ public class Note : MonoBehaviour {
     private float percentage;
     private SpriteRenderer sprite;
     private int[] judge;
-    private bool added;
+    private bool missed;
     private bool ini;
 
     public GameObject particle;
@@ -26,7 +26,7 @@ public class Note : MonoBehaviour {
         percentage = 0;
         sprite = GetComponent<SpriteRenderer>();
         judge = getJjudgeTiming();
-        added = false;
+        missed = false;
         ini = false;
     }
 	
@@ -49,6 +49,7 @@ public class Note : MonoBehaviour {
         {
             percentage = (float)(fInfo.getProgress() - start) / reach;
             if (percentage > 1) percentage = (percentage + brake - 1) / brake;
+            else if (percentage < 0) percentage = 0;
 
             transform.position = route(percentage);
 
@@ -62,17 +63,17 @@ public class Note : MonoBehaviour {
             }
 
             //判定ライン内にいるときだけキューに入れる
-            if (fInfo.getProgress() - start - reach > -1 * judge[judge.Length - 1] && nInfo.channel >= 0 && !added)
+            if (fInfo.getProgress() - start - reach > -1 * judge[judge.Length - 1] && nInfo.channel >= 0 && !fInfo.canHitQueue.Contains(this) && !missed)
             {
                 fInfo.canHitQueue.Add(this);
-                added = true;
             }
-            else if (fInfo.getProgress() - start - reach > judge[judge.Length - 1] && nInfo.channel >= 0)
+            else if (fInfo.getProgress() - start - reach > judge[judge.Length - 1] && nInfo.channel >= 0 && !missed)
             {
                 if (fInfo.canHitQueue.Contains(this))
                 {
                     fInfo.canHitQueue.Remove(this);
                     fInfo.addNotesRank(0);
+                    missed = true;
                 }
                 sprite.color = new Color(0.5f, 0.5f, 0.5f);
             }
