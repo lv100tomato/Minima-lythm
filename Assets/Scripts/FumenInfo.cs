@@ -10,7 +10,8 @@ using System;
 using System.Text;
 using System.Linq;
 
-public class FumenInfo : MonoBehaviour{
+public class FumenInfo : MonoBehaviour
+{
 
     public GameObject Note;
     public GameObject Line;
@@ -24,6 +25,7 @@ public class FumenInfo : MonoBehaviour{
     public Text StatusText;
     public Text MultiIntervalText;
     public Text AdjustTimingText;
+    public Image BlackBack;
 
     private AudioSource audioS;
     private bool first;
@@ -32,7 +34,7 @@ public class FumenInfo : MonoBehaviour{
     private static string fumenName = "";   //譜面ファイルのありか
     private static string musicName = "";   //楽曲ファイルのありか
     private static bool auto = false;   //自動演奏するかどうか
-    private static bool play = false;   
+    private static bool play = false;
     private static int playerShift = 0; //プレイヤー側で決めるノーツタイミングのずれ(+で遅れる、-で早まる)
     private static char speed = (char)10;   //ノーツスピードの10倍の値(10なら等倍、5～99)
     private static int interval = 2000;    //ノーツが発射されてから到達するまでの時間
@@ -47,7 +49,8 @@ public class FumenInfo : MonoBehaviour{
     private static AudioClip music; //Unityで曲を流す準備
     private static bool ready;  //譜面を再生する準備が出来ているかどうか
     private static FumenData data;  //譜面の基本情報
-        //以下は読み込むときに使う
+    
+    //以下は読み込むときに使う
     private static bool ok1 = false;
     private static bool ok2 = false;
     private static bool ng = false;
@@ -60,12 +63,18 @@ public class FumenInfo : MonoBehaviour{
     private int[] notesRank;    //判定ごとの総数
     private int maxCombo, combo;
 
+    private static int pauseTime = 1000;    //何ms巻き戻すか
+
+    private int pauze = 0;  //ポーズ位置
+    private bool isPause = false;   //ポーズ中かどうか
+
     private int outro;
     //private long mark = 0;   //譜面再生位置(ms)の基準点(BPMが変化するときとかに変更される)
     public List<Note> canHitQueue;//判定ライン内にあるノーツ達
 
 
-    public FumenInfo() {
+    public FumenInfo()
+    {
 
     }
 
@@ -228,12 +237,14 @@ public class FumenInfo : MonoBehaviour{
         first = false;
         canHitQueue = new List<Note>();
         notesRank = new int[4];
-        for(int i = 0; i < 4; ++i)
+        for (int i = 0; i < 4; ++i)
         {
             notesRank[i] = 0;
         }
 
         progress = 0;
+        pauze = 0;
+        isPause = false;
         maxCombo = 0;
         combo = 0;
         outro = 0;
@@ -259,79 +270,129 @@ public class FumenInfo : MonoBehaviour{
         {
             //譜面を再生しているとき
 
-            if (progress < interval)
+            if (!isPause)
             {
-                progress += (int)(Time.deltaTime * 1000);
+                if (progress < interval)
+                {
+                    progress += (int)(Time.deltaTime * 1000);
+                }
+                else
+                {
+                    if (!first)
+                    {
+                        first = true;
+                        audioS.Play();
+                        audioS.volume = 1.0f;
+                        Debug.Log("Music Start");
+                    }
+
+                    progress = (int)(audioS.time * 1000) + interval;
+                    count = (int)((float)progress * 60f / 1000f);
+                }
+
+                if (!audioS.isPlaying && FumenData.fumenIsFinished())
+                {
+                    //譜面の再生が終わったとき
+                    if (outro <= 1200) StatusText.fontSize = outro / 15 + 5;
+
+                    if (outro < 1)
+                    {
+                        if (notesRank[0] > 0)
+                        {
+                            StatusText.text = "Finished";
+                        }
+                        else if (notesRank[1] > 0)
+                        {
+                            StatusText.text = "No Miss";
+                        }
+                        else if (notesRank[2] > 0)
+                        {
+                            StatusText.text = "Full Combo";
+                        }
+                        else
+                        {
+                            StatusText.text = "All Perfect";
+                        }
+                    }
+
+                    if (outro < 5000) outro += (int)(Time.deltaTime * 1000);
+                    else SceneManager.LoadScene("SelectMusic");
+                }
+                else
+                {
+                    //譜面の再生が終わってないとき
+
+                    if (Input.GetKeyDown(KeyCode.Space) && progress > pauze)
+                    {
+                        StatusText.text = "PAUSE";
+                        BlackBack.color = new Color(BlackBack.color.r, BlackBack.color.g, BlackBack.color.b, 0.5f);
+                        isPause = true;
+                        pauze = progress;
+                        audioS.volume = 0.0f;
+                        audioS.Pause();
+                    }
+
+                    if(progress <= pauze)
+                    {
+                        audioS.volume = (1.0f - 1.1f * (float)(pauze - progress) / (float)pauseTime);
+                    }
+                }
+
+                List<NoteInfo> hoge = FumenData.GetNotes(getProgress());
+
+                foreach (NoteInfo i in hoge)
+                {
+                    if (i.channel >= 10 || i.channel < 0)
+                    {
+                        //i.debugging();
+                        GameObject newNote = (i.channel < 0) ? Instantiate(Line, new Vector3((i.channel - 16), 15.0f, 0.0f), this.transform.rotation)
+                                                            : Instantiate(Note, new Vector3((i.channel - 16), 15.0f, 0.0f), this.transform.rotation);
+                        Note newNoteNote = newNote.GetComponent<Note>();
+                        newNoteNote.setFumenInfo(this);
+                        newNoteNote.setNoteInfo(i);
+                        newNoteNote.setBaseMs(i.getTiming());
+                        newNoteNote.setReachTime(interval);
+                    }
+                }
+
+                int hantei = getNumsOfKeysDown();
+
+                for (int i = 0; i < hantei; ++i)
+                {
+                    if (canHitQueue.Count == 0) break;
+
+                    canHitQueue[0].judging();
+                }
+
             }
             else
             {
-                if (!first)
+                //ポーズ中
+                if (Input.GetKeyDown(KeyCode.Space))
                 {
-                    first = true;
-                    audioS.Play();
-                    Debug.Log("Music Start");
-                }
-
-                progress = (int)(audioS.time * 1000) + interval;
-                count = (int)((float)progress * 60f / 1000f);
-            }
-
-            if (!audioS.isPlaying && FumenData.fumenIsFinished())
-            {
-                //譜面の再生が終わったとき
-                if (outro <= 1200) StatusText.fontSize = outro / 15;
-
-                if (outro < 1)
-                {
-                    if(notesRank[0] > 0)
+                    StatusText.text = "";
+                    BlackBack.color = new Color(BlackBack.color.r, BlackBack.color.g, BlackBack.color.b, 0.0f);
+                    isPause = false;
+                    if(audioS.time >= (float)pauseTime/1000f)
                     {
-                        StatusText.text = "Finished";
-                    }
-                    else if (notesRank[1] > 0)
-                    {
-                        StatusText.text = "No Miss";
-                    }
-                    else if (notesRank[2] > 0)
-                    {
-                        StatusText.text = "Full Combo";
+                        audioS.time -= (float)pauseTime / 1000f;
+                        audioS.Play();
+                        audioS.volume = 0.0f;
                     }
                     else
                     {
-                        StatusText.text = "All Perfect";
+                        audioS.time = 0;
+                        first = false;
                     }
+                    progress -= pauseTime;
+                    canHitQueue.Clear();
                 }
-
-                if (outro < 5000) outro += (int)(Time.deltaTime * 1000);
-                else SceneManager.LoadScene("SelectMusic");
-            }
-
-            List<NoteInfo> hoge = FumenData.GetNotes(getProgress());
-
-            foreach (NoteInfo i in hoge)
-            {
-                if (i.channel >= 10 || i.channel < 0)
+                else if (Input.GetKeyDown(KeyCode.Escape))
                 {
-                    //i.debugging();
-                    GameObject newNote = (i.channel < 0)? Instantiate(Line, new Vector3((i.channel - 16), 15.0f, 0.0f), this.transform.rotation)
-                                                        : Instantiate(Note, new Vector3((i.channel - 16), 15.0f, 0.0f), this.transform.rotation);
-                    Note newNoteNote = newNote.GetComponent<Note>();
-                    newNoteNote.setFumenInfo(this);
-                    newNoteNote.setNoteInfo(i);
-                    newNoteNote.setBaseMs(i.getTiming());
-                    newNoteNote.setReachTime(interval);
+                    SceneManager.LoadScene("SelectMusic");
                 }
+
             }
-
-            int hantei = getNumsOfKeysDown();
-
-            for(int i = 0; i < hantei; ++i)
-            {
-                if (canHitQueue.Count == 0) break;
-
-                canHitQueue[0].judging();
-            }
-
-            //Destroy(gameObject);
         }
         else
         {
@@ -339,7 +400,6 @@ public class FumenInfo : MonoBehaviour{
             {
                 ready = true;
                 StatusText.text = "";
-                StatusText.fontSize = 0;
                 interval = (int)(intervalBase / intervalMul);
                 MultiIntervalText.text = "";
                 AdjustTimingText.text = "";
@@ -365,23 +425,6 @@ public class FumenInfo : MonoBehaviour{
                 if (playerShift > -1000) playerShift -= 1;
                 updateAdjust();
             }
-
-
-
-
-            //読み込むとき
-            if (ng)
-            {
-                //読み込みに失敗したときの処理
-            }
-            else
-            {
-                if(ok1 && ok2)
-                {
-                    //譜面と曲の両方が読み込めた時の処理
-                    ready = true;
-                }
-            }
         }
     }
 
@@ -392,7 +435,7 @@ public class FumenInfo : MonoBehaviour{
 
     public void addNotesRank(int rank)
     {
-        if(rank>=0 && rank < notesRank.Length)
+        if (rank >= 0 && rank < notesRank.Length)
         {
             ++notesRank[rank];
 
@@ -426,9 +469,9 @@ public class FumenInfo : MonoBehaviour{
     {
         int output = 0;
 
-        foreach(KeyCode i in Enum.GetValues(typeof(KeyCode)))
+        foreach (KeyCode i in Enum.GetValues(typeof(KeyCode)))
         {
-            if (Convert.ToInt32(i) == 0) continue;
+            if (Convert.ToInt32(i) == 0 || i == KeyCode.Space) continue;
 
             if (Input.GetKeyDown(i)) ++output;
         }
