@@ -40,4 +40,4 @@ sysinfo.txt
 # For Mac
 .DS_Store
 
-/Assets/StreamingAssets/*.meta
+/Assets/StreamingAssets/**/*.meta
