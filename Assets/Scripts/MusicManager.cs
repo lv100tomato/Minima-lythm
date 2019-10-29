@@ -91,7 +91,7 @@ public class MusicManager : MonoBehaviour
         List<string> musicFiles = new List<string>();
         for (int i = 0; i < fumenFiles.Count; ++i)
         {
-            string place = fumenFiles[i].Substring(0, fumenFiles[i].LastIndexOf("\\"));
+            string place = System.IO.Path.GetDirectoryName (fumenFiles[i]);
 
             string[] kouho = System.IO.Directory.GetFiles(place, "*.wav");
             if (kouho.Length < 1) kouho = System.IO.Directory.GetFiles(place, "*.ogg");
