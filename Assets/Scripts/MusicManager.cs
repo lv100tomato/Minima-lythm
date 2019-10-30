@@ -15,6 +15,7 @@ public class MusicManager : MonoBehaviour
 
     static private string[][] fumensAndMusics;
     static private string[] ButtonTexts;
+    static private string[] ButtonInfoTexts;
     private GameObject[] Buttons;
     private int nowLoading;
     private string selectedMusic;
@@ -35,7 +36,11 @@ public class MusicManager : MonoBehaviour
 
         nowLoading = 0;
         bool isFirst = ButtonTexts == null;
-        if (isFirst) ButtonTexts = new string[fumensAndMusics[0].Length];
+        if (isFirst)
+        {
+            ButtonTexts = new string[fumensAndMusics[0].Length];
+            ButtonInfoTexts = new string[fumensAndMusics[0].Length];
+        }
         Buttons = new GameObject[fumensAndMusics[0].Length];
 
         for(int i = 0; i < fumensAndMusics[0].Length; ++i)
@@ -48,12 +53,15 @@ public class MusicManager : MonoBehaviour
             if (isFirst)
             {
                 ButtonTexts[i] = " now loading...";
+                ButtonInfoTexts[i] = "";
             }
             else
             {
                 nowLoading = fumensAndMusics[0].Length;
             }
-            button.transform.GetComponentInChildren<Text>().text = ButtonTexts[i];
+            //button.transform.GetComponentInChildren<Text>().text = ButtonTexts[i];
+            button.transform.Find("Text").gameObject.GetComponent<Text>().text = ButtonTexts[i];
+            button.transform.Find("InfoText").gameObject.GetComponent<Text>().text = ButtonInfoTexts[i];
             button.GetComponent<Button>().setMusicManager(this);
             button.GetComponent<Button>().setButtonId(i);
         }
@@ -74,7 +82,10 @@ public class MusicManager : MonoBehaviour
             if (FumenData.isDataLoaded)
             {
                 ButtonTexts[nowLoading] = " " + FumenData.title + "\n LEVEL : " + FumenData.playlevel;
-                Buttons[nowLoading].transform.GetComponentInChildren<Text>().text = ButtonTexts[nowLoading];
+                ButtonInfoTexts[nowLoading] = "composer : " + FumenData.artist;
+                //Buttons[nowLoading].transform.GetComponentInChildren<Text>().text = ButtonTexts[nowLoading];
+                Buttons[nowLoading].transform.Find("Text").gameObject.GetComponent<Text>().text = ButtonTexts[nowLoading];
+                Buttons[nowLoading].transform.Find("InfoText").gameObject.GetComponent<Text>().text = ButtonInfoTexts[nowLoading];
                 FumenData.setLoadedFalse();
                 ++nowLoading;
                 if (nowLoading < fumensAndMusics[0].Length) StartCoroutine(FumenData.LoadFumen(fumensAndMusics[0][nowLoading], true));
