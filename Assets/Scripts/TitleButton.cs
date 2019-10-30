@@ -10,7 +10,9 @@ public class TitleButton : MonoBehaviour
     {
         start,
         option,
-        exit
+        exit,
+        back,
+        timing
     }
 
     public Act action;
@@ -35,6 +37,7 @@ public class TitleButton : MonoBehaviour
                 SceneManager.LoadScene("SelectMusic");
                 break;
             case Act.option:
+                transform.parent.gameObject.GetComponent<UIMover>().MoveTo(new Vector2(0, 720));
                 break;
             case Act.exit:
                 #if UNITY_EDITOR
@@ -42,6 +45,12 @@ public class TitleButton : MonoBehaviour
                 #elif UNITY_STANDALONE
                 UnityEngine.Application.Quit();
                 #endif
+                break;
+            case Act.back:
+                transform.parent.gameObject.GetComponent<UIMover>().MoveReset();
+                break;
+            case Act.timing:
+                transform.parent.gameObject.GetComponent<UIMover>().MoveTo(new Vector2(-1280, 720));
                 break;
         }
     }
