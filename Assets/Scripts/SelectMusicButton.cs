@@ -33,6 +33,7 @@ public class SelectMusicButton : MonoBehaviour
         switch (action)
         {
             case Act.start:
+                UserData.loadData();
                 Manager.GetComponent<MusicManager>().moveToGameScene();
                 break;
             case Act.option:
