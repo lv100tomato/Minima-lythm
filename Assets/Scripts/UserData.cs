@@ -47,13 +47,13 @@ public class UserData
         }
     }
 
-    public void loadData()
+    public static void loadData()
     {
         playerShift = PlayerPrefs.GetInt(keysName[0], 0);
         intervalMul = PlayerPrefs.GetInt(keysName[1], 20);
     }
 
-    public void saveData()
+    public static void saveData()
     {
         PlayerPrefs.SetInt(keysName[0], playerShift);
         PlayerPrefs.SetInt(keysName[1], intervalMul);
