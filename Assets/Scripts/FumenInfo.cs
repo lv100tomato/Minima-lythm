@@ -402,6 +402,7 @@ public class FumenInfo : MonoBehaviour
                 MultiIntervalText.text = "";
                 AdjustTimingText.text = "";
                 progress = (interval > 0) ? 0 - interval : 0;
+                UserData.saveData();
             }
             else if (Input.GetKeyDown(KeyCode.UpArrow))
             {
