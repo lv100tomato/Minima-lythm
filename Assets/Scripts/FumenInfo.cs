@@ -35,11 +35,9 @@ public class FumenInfo : MonoBehaviour
     private static string musicName = "";   //楽曲ファイルのありか
     private static bool auto = false;   //自動演奏するかどうか
     private static bool play = false;
-    private static int playerShift = 0; //プレイヤー側で決めるノーツタイミングのずれ(+で遅れる、-で早まる)
     private static char speed = (char)10;   //ノーツスピードの10倍の値(10なら等倍、5～99)
     private static int interval = 2000;    //ノーツが発射されてから到達するまでの時間
     private static int intervalBase = 4000;//上の計算のもとになる数
-    private static decimal intervalMul = 2.0M;//速度倍率
     private static int count;   //譜面再生開始位置(ms)
 
     //以下は譜面を読み込むときに書き込む
@@ -93,10 +91,10 @@ public class FumenInfo : MonoBehaviour
         auto = flag;
     }
 
-    public static void setTiming(int timing)
-    {
-        playerShift = timing;
-    }
+    //public static void setTiming(int timing)
+    //{
+    //    playerShift = timing;
+    //}
 
     public static void setSpeed(char spd)
     {
@@ -400,29 +398,29 @@ public class FumenInfo : MonoBehaviour
             {
                 ready = true;
                 StatusText.text = "";
-                interval = (int)(intervalBase / intervalMul);
+                interval = (int)(intervalBase / UserData.IntervalMul);
                 MultiIntervalText.text = "";
                 AdjustTimingText.text = "";
                 progress = (interval > 0) ? 0 - interval : 0;
             }
             else if (Input.GetKeyDown(KeyCode.UpArrow))
             {
-                if (intervalMul < 10) intervalMul += 0.1M;
+                UserData.IntervalMul += 0.1M;
                 updateMulti();
             }
             else if (Input.GetKeyDown(KeyCode.DownArrow))
             {
-                if (intervalMul > 0.5M) intervalMul -= 0.1M;
+                UserData.IntervalMul -= 0.1M;
                 updateMulti();
             }
             else if (Input.GetKeyDown(KeyCode.RightArrow))
             {
-                if (playerShift < 1000) playerShift += 1;
+                UserData.PlayerShift += 1;
                 updateAdjust();
             }
             else if (Input.GetKeyDown(KeyCode.LeftArrow))
             {
-                if (playerShift > -1000) playerShift -= 1;
+                UserData.PlayerShift -= 1;
                 updateAdjust();
             }
         }
@@ -430,7 +428,7 @@ public class FumenInfo : MonoBehaviour
 
     public int getProgress()
     {
-        return progress - playerShift;
+        return progress - UserData.PlayerShift;
     }
 
     public void addNotesRank(int rank)
@@ -482,12 +480,12 @@ public class FumenInfo : MonoBehaviour
 
     private void updateMulti()
     {
-        MultiIntervalText.text = "Speed\n   ↑\nx" + intervalMul + "\n   ↓";
+        MultiIntervalText.text = "Speed\n   ↑\nx" + UserData.IntervalMul + "\n   ↓";
     }
 
     private void updateAdjust()
     {
-        AdjustTimingText.text = "Timing\n←    →\n" + ((playerShift == 0) ? "±" : ((playerShift > 0) ? "+" : "")) + playerShift + "ms";
+        AdjustTimingText.text = "Timing\n←    →\n" + ((UserData.PlayerShift == 0) ? "±" : ((UserData.PlayerShift > 0) ? "+" : "")) + UserData.PlayerShift + "ms";
     }
 
 }
