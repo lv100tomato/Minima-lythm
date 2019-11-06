@@ -552,7 +552,7 @@ MonoBehaviour:
       Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_FontData:
     m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
-    m_FontSize: 50
+    m_FontSize: 40
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 0
@@ -562,8 +562,8 @@ MonoBehaviour:
     m_RichText: 1
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
-    m_LineSpacing: 0.42
-  m_Text: "<b>Produce & Programs</b>\n\nlv100\n\n\n<b>Musics</b>\n\n<size=40>\u3076,
+    m_LineSpacing: 0.45
+  m_Text: "<b>Produce</b>\n\nlv100\n\n\n<b>Programs</b>\n\nlv100, ten\n\n\n<b>Musics</b>\n\n<size=40>\u3076,
     Tetsuyamin, LostSentence, \u306D\u3053\u5C11\u5973</size>\n\n\n<b>Scores</b>\n\n<size=40>\u767D\u72D0,
     lv100</size>\n\n\n<b>Published by <size=65>KMC</size></b>"
 --- !u!222 &225686262
