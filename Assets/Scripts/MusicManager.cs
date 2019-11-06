@@ -136,7 +136,7 @@ public class MusicManager : MonoBehaviour
         selectedFumen = fumensAndMusics[0][id];
         selectedMusic = fumensAndMusics[1][id];
 
-        ScrollView.GetComponent<UIMover>().MoveTo(new Vector2(-1280, 0));
+        ScrollView.GetComponent<UIMover>().Move(new Vector2(-1280, 0));
         KakuninBase.GetComponent<UIMover>().MoveTo(new Vector2(0, 0));
 
         KakuninBase.transform.Find("TitleAndLevel").gameObject.GetComponentInChildren<Text>().text = ButtonTexts[id];
