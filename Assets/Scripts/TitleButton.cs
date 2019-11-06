@@ -12,7 +12,8 @@ public class TitleButton : MonoBehaviour
         option,
         exit,
         back,
-        timing
+        timing,
+        credits
     }
 
     public Act action;
@@ -51,6 +52,9 @@ public class TitleButton : MonoBehaviour
                 break;
             case Act.timing:
                 transform.parent.gameObject.GetComponent<UIMover>().MoveTo(new Vector2(-1280, 720));
+                break;
+            case Act.credits:
+                transform.parent.gameObject.GetComponent<UIMover>().MoveTo(new Vector2(1280, 720));
                 break;
         }
     }
