@@ -21,6 +21,7 @@ public class UIMover : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (speed < 0.1) speed = 0.1f;
         this.transform.localPosition = (this.transform.localPosition * defaultSpeed + targetPos * speed * Time.deltaTime) / (defaultSpeed + speed * Time.deltaTime);
     }
 

@@ -154,4 +154,16 @@ public class MusicManager : MonoBehaviour
         FumenInfo.SetMusicName(selectedMusic);
         SceneManager.LoadScene("Otoge");
     }
+
+    public static int fumenNums()
+    {
+        if (fumensAndMusics == null)
+        {
+            return -1;
+        }
+        else
+        {
+            return fumensAndMusics[0].Length;
+        }
+    }
 }
