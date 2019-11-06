@@ -12,6 +12,7 @@ public class ScrollWheel : MonoBehaviour
     private int maxIndex = 0;
     private float target;
     private readonly float defaultSpeed = 0.1f;
+    private bool isFirst = true;
 
     void Start()
     {
@@ -59,6 +60,14 @@ public class ScrollWheel : MonoBehaviour
             target = 1.0f - ((float)index / maxIndex);
         }
 
-        bar.value = (bar.value * defaultSpeed + target * speed * Time.deltaTime) / (defaultSpeed + speed * Time.deltaTime);
+        if (isFirst)
+        {
+            isFirst = false;
+            bar.value = target;
+        }
+        else
+        {
+            bar.value = (bar.value * defaultSpeed + target * speed * Time.deltaTime) / (defaultSpeed + speed * Time.deltaTime);
+        }
     }
 }
