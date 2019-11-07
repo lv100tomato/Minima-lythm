@@ -8,7 +8,7 @@ public class ScrollWheel : MonoBehaviour
     public float speed = 1.0f;
 
     private Scrollbar bar;
-    private static int index = 0;
+    private static float pos = 1;
     private int maxIndex = 0;
     private float target;
     private readonly float defaultSpeed = 0.1f;
@@ -33,41 +33,57 @@ public class ScrollWheel : MonoBehaviour
             speed = 0.1f;
         }
 
+        float step = 0;
+
         maxIndex = MusicManager.fumenNums();
         if (maxIndex < 0)
         {
             maxIndex = 0;
         }
+        if(maxIndex > 0)
+        {
+            step = 1.0f / maxIndex;
+        }
 
         float wheel = Input.GetAxis("Mouse ScrollWheel");
         if (wheel < 0)
         {
-            if (index < maxIndex)
+            pos -= step;
+
+            if (pos < 0)
             {
-                ++index;
+                pos = 0;
             }
         }
         else if (wheel > 0)
         {
-            if (index > 0)
+            pos += step;
+
+            if (pos > 1)
             {
-                --index;
+                pos = 1;
             }
         }
 
-        if(maxIndex > 0)
-        {
-            target = 1.0f - ((float)index / maxIndex);
-        }
+        //target = pos;
 
         if (isFirst)
         {
             isFirst = false;
-            bar.value = target;
+            bar.value = pos;
         }
         else
         {
-            bar.value = (bar.value * defaultSpeed + target * speed * Time.deltaTime) / (defaultSpeed + speed * Time.deltaTime);
+            if (Mathf.Abs(bar.value - target) < step * 0.01)
+            {
+                target = (target * defaultSpeed + pos * speed * Time.deltaTime) / (defaultSpeed + speed * Time.deltaTime);
+                bar.value = target;
+            }
+            else
+            {
+                target = bar.value;
+                pos = target;
+            }
         }
     }
 }
