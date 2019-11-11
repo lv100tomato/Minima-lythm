@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Text;
+using System.Security.Cryptography;
 using UnityEngine;
 
 public class FumenData
@@ -27,6 +28,7 @@ public class FumenData
     public static NoteInfo[] realNotes;//実際に流れてくるノーツ達
 
     private static int maxCombo;  //最大コンボ
+    private static string hash;   //譜面のハッシュ
 
     private static int progress;  //譜面をどこまで読み込んだか(ms)
     private static int noteIndex;     //配列をどこまで読み込んだか
@@ -225,7 +227,16 @@ public class FumenData
               }
           });
 
-        //
+        //ハッシュ値を求める
+        hash = "";
+        //byte[] byteFumen = System.Text.Encoding.UTF8.GetBytes(Text);
+        SHA1CryptoServiceProvider encoder = new SHA1CryptoServiceProvider();
+        byte[] encoded = encoder.ComputeHash(System.Text.Encoding.UTF8.GetBytes(Text));
+        for(int i = 0; i < encoded.Length; ++i)
+        {
+            hash += encoded[i].ToString();
+        }
+        encoder.Clear();
 
         isDataLoaded = true;
 
@@ -802,5 +813,10 @@ public class FumenData
 
         FumenData.ReadData(txt);
         if (!isOnlyLoadData) FumenData.ReadNotesData(txt);
+    }
+
+    public static string getFumenHash()
+    {
+        return hash;
     }
 }

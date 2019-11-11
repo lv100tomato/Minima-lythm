@@ -53,9 +53,19 @@ public class UserData
         intervalMul = PlayerPrefs.GetInt(keysName[1], 20);
     }
 
+    public static int loadFumenScore(string hash)
+    {
+        return PlayerPrefs.GetInt(hash, 0);
+    }
+
     public static void saveData()
     {
         PlayerPrefs.SetInt(keysName[0], playerShift);
         PlayerPrefs.SetInt(keysName[1], intervalMul);
+    }
+
+    public static void saveFumenScore(string hash, int score)
+    {
+        PlayerPrefs.SetInt(hash, score);
     }
 }

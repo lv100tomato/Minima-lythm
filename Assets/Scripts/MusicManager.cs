@@ -16,6 +16,8 @@ public class MusicManager : MonoBehaviour
     static private string[][] fumensAndMusics;
     static private string[] ButtonTexts;
     static private string[] ButtonInfoTexts;
+    static private string[] FumenHashes;
+    static private string[] FumenScoreTexts;
     private GameObject[] Buttons;
     private int nowLoading;
     private string selectedMusic;
@@ -40,6 +42,8 @@ public class MusicManager : MonoBehaviour
         {
             ButtonTexts = new string[fumensAndMusics[0].Length];
             ButtonInfoTexts = new string[fumensAndMusics[0].Length];
+            FumenHashes = new string[fumensAndMusics[0].Length];
+            FumenScoreTexts = new string[fumensAndMusics[0].Length];
         }
         Buttons = new GameObject[fumensAndMusics[0].Length];
 
@@ -54,16 +58,19 @@ public class MusicManager : MonoBehaviour
             {
                 ButtonTexts[i] = " now loading...";
                 ButtonInfoTexts[i] = "";
+                FumenScoreTexts[i] = "";
+                FumenHashes[i] = "0";
             }
             else
             {
                 nowLoading = fumensAndMusics[0].Length;
+                FumenScoreTexts[i] = "MaxScore : " + UserData.loadFumenScore(FumenHashes[i]);
             }
-            //button.transform.GetComponentInChildren<Text>().text = ButtonTexts[i];
             button.transform.Find("Text").gameObject.GetComponent<Text>().text = ButtonTexts[i];
-            button.transform.Find("InfoText").gameObject.GetComponent<Text>().text = ButtonInfoTexts[i];
+            button.transform.Find("InfoText").gameObject.GetComponent<Text>().text = FumenScoreTexts[i] + "\n" + ButtonInfoTexts[i];
             button.GetComponent<Button>().setMusicManager(this);
             button.GetComponent<Button>().setButtonId(i);
+
         }
 
         if (nowLoading == 0)
@@ -83,9 +90,12 @@ public class MusicManager : MonoBehaviour
             {
                 ButtonTexts[nowLoading] = " " + FumenData.title + "\n LEVEL : " + FumenData.playlevel;
                 ButtonInfoTexts[nowLoading] = "composer : " + FumenData.artist;
+                FumenHashes[nowLoading] = FumenData.getFumenHash();
                 //Buttons[nowLoading].transform.GetComponentInChildren<Text>().text = ButtonTexts[nowLoading];
                 Buttons[nowLoading].transform.Find("Text").gameObject.GetComponent<Text>().text = ButtonTexts[nowLoading];
-                Buttons[nowLoading].transform.Find("InfoText").gameObject.GetComponent<Text>().text = ButtonInfoTexts[nowLoading];
+                FumenScoreTexts[nowLoading] = "MaxScore : " + UserData.loadFumenScore(FumenHashes[nowLoading]);
+                Buttons[nowLoading].transform.Find("InfoText").gameObject.GetComponent<Text>().text = FumenScoreTexts[nowLoading] + "\n" + ButtonInfoTexts[nowLoading];
+                //Buttons[nowLoading].transform.Find("InfoText").gameObject.GetComponent<Text>().text = UserData.loadFumenScore(FumenHashes[nowLoading]).ToString();
                 FumenData.setLoadedFalse();
                 ++nowLoading;
                 if (nowLoading < fumensAndMusics[0].Length) StartCoroutine(FumenData.LoadFumen(fumensAndMusics[0][nowLoading], true));

@@ -320,7 +320,16 @@ public class FumenInfo : MonoBehaviour
                     }
 
                     if (outro < 5000) outro += (int)(Time.deltaTime * 1000);
-                    else SceneManager.LoadScene("SelectMusic");
+                    else
+                    {
+                        int maxScore = UserData.loadFumenScore(FumenData.getFumenHash());
+                        if (calculateScore() > maxScore)
+                        {
+                            UserData.saveFumenScore(FumenData.getFumenHash(), (int)calculateScore());
+                            Debug.Log("Score Saved!");
+                        }
+                        SceneManager.LoadScene("SelectMusic");
+                    }
                 }
                 else
                 {
@@ -361,16 +370,16 @@ public class FumenInfo : MonoBehaviour
 
                 int hantei = getNumsOfKeysDown();
 
-                if (hantei > 0)
-                {
-                    updateScore();
-                }
-
                 for (int i = 0; i < hantei; ++i)
                 {
                     if (canHitQueue.Count == 0) break;
 
                     canHitQueue[0].judging();
+                }
+
+                if (hantei > 0)
+                {
+                    updateScore();
                 }
 
             }
