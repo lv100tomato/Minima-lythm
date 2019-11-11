@@ -72,7 +72,6 @@ public class FumenInfo : MonoBehaviour
     public List<Note> canHitQueue;//判定ライン内にあるノーツ達
 
     private int score;
-    private int maxScore;
 
     private static readonly int[] scoreUnit = { 0, 2, 4, 5 };
 
@@ -252,7 +251,6 @@ public class FumenInfo : MonoBehaviour
         combo = 0;
         outro = 0;
         score = 0;
-        maxScore = 0;
 
         ComboScore.text = "0";
         MaxComboScore.text = "0";
