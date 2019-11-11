@@ -25,6 +25,7 @@ public class FumenInfo : MonoBehaviour
     public Text StatusText;
     public Text MultiIntervalText;
     public Text AdjustTimingText;
+    public Text ScoreText;
     public Image BlackBack;
 
     private AudioSource audioS;
@@ -70,6 +71,9 @@ public class FumenInfo : MonoBehaviour
     //private long mark = 0;   //譜面再生位置(ms)の基準点(BPMが変化するときとかに変更される)
     public List<Note> canHitQueue;//判定ライン内にあるノーツ達
 
+    private int score;
+
+    private static readonly int[] scoreUnit = { 0, 2, 4, 5 };
 
     public FumenInfo()
     {
@@ -246,6 +250,7 @@ public class FumenInfo : MonoBehaviour
         maxCombo = 0;
         combo = 0;
         outro = 0;
+        score = 0;
 
         ComboScore.text = "0";
         MaxComboScore.text = "0";
@@ -255,6 +260,7 @@ public class FumenInfo : MonoBehaviour
         PerfectScore.text = "0";
         StatusText.text = "Click or Enter to Start";
         StatusText.fontSize = 70;
+        ScoreText.text = "";
         //StatusText.text = Application.streamingAssetsPath;
         //StatusText.fontSize = 30;
         updateMulti();
@@ -322,7 +328,7 @@ public class FumenInfo : MonoBehaviour
 
                     if (Input.GetKeyDown(KeyCode.Space) && progress > pauze)
                     {
-                        StatusText.text = "PAUSE";
+                        StatusText.text = "PAUSE\n<size=40>press [esc] key to quit</size>";
                         BlackBack.color = new Color(BlackBack.color.r, BlackBack.color.g, BlackBack.color.b, 0.5f);
                         isPause = true;
                         pauze = progress;
@@ -354,6 +360,11 @@ public class FumenInfo : MonoBehaviour
                 }
 
                 int hantei = getNumsOfKeysDown();
+
+                if (hantei > 0)
+                {
+                    updateScore();
+                }
 
                 for (int i = 0; i < hantei; ++i)
                 {
@@ -401,6 +412,7 @@ public class FumenInfo : MonoBehaviour
                 interval = (int)(intervalBase / UserData.IntervalMul);
                 MultiIntervalText.text = "";
                 AdjustTimingText.text = "";
+                updateScore();
                 progress = (interval > 0) ? 0 - interval : 0;
                 UserData.saveData();
             }
@@ -442,18 +454,22 @@ public class FumenInfo : MonoBehaviour
             {
                 case 0:
                     MissScore.text = notesRank[rank].ToString();
+                    score += scoreUnit[rank];
                     combo = 0;
                     break;
                 case 1:
                     GoodScore.text = notesRank[rank].ToString();
+                    score += scoreUnit[rank];
                     combo = 0;
                     break;
                 case 2:
                     GreatScore.text = notesRank[rank].ToString();
+                    score += scoreUnit[rank];
                     ++combo;
                     break;
                 case 3:
                     PerfectScore.text = notesRank[rank].ToString();
+                    score += scoreUnit[rank];
                     ++combo;
                     break;
             }
@@ -489,4 +505,20 @@ public class FumenInfo : MonoBehaviour
         AdjustTimingText.text = "Timing\n←    →\n" + ((UserData.PlayerShift == 0) ? "±" : ((UserData.PlayerShift > 0) ? "+" : "")) + UserData.PlayerShift + "ms";
     }
 
+    private void updateScore()
+    {
+        ScoreText.text = "Score\n" + calculateScore().ToString("D9");
+    }
+
+    private long calculateScore()
+    {
+        if (FumenData.getMaxCombo() > 0)
+        {
+           return ((score * (long)100000000) / (FumenData.getMaxCombo() * scoreUnit[3]));
+        }
+        else
+        {
+            return 0;
+        }
+    }
 }
