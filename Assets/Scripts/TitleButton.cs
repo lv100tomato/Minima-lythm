@@ -13,7 +13,10 @@ public class TitleButton : MonoBehaviour
         exit,
         back,
         timing,
-        credits
+        credits,
+        delete,
+        deleteAll,
+        finalDeleteAll
     }
 
     public Act action;
@@ -51,11 +54,22 @@ public class TitleButton : MonoBehaviour
                 transform.parent.gameObject.GetComponent<UIMover>().MoveReset();
                 break;
             case Act.timing:
-                transform.parent.gameObject.GetComponent<UIMover>().MoveTo(new Vector2(-1280, 720));
+                transform.parent.gameObject.GetComponent<UIMover>().MoveTo(new Vector2(0, 1440));
                 break;
             case Act.credits:
                 transform.parent.gameObject.GetComponent<UIMover>().MoveTo(new Vector2(1280, 720));
                 break;
+            case Act.delete:
+                transform.parent.gameObject.GetComponent<UIMover>().MoveTo(new Vector2(-1280, 720));
+                break;
+            case Act.deleteAll:
+                transform.parent.gameObject.GetComponent<UIMover>().MoveTo(new Vector2(-2560, 720));
+                break;
+            case Act.finalDeleteAll:
+                UserData.deleteAll();
+                SceneManager.LoadScene("TitleScene");
+                break;
+
         }
     }
 }

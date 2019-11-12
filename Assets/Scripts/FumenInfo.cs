@@ -326,6 +326,7 @@ public class FumenInfo : MonoBehaviour
                         if (calculateScore() > maxScore)
                         {
                             UserData.saveFumenScore(FumenData.getFumenHash(), (int)calculateScore());
+                            UserData.save();
                             Debug.Log("Score Saved!");
                         }
                         SceneManager.LoadScene("SelectMusic");
