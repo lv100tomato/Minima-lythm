@@ -68,4 +68,14 @@ public class UserData
     {
         PlayerPrefs.SetInt(hash, score);
     }
+
+    public static void save()
+    {
+        PlayerPrefs.Save();
+    }
+
+    public static void deleteAll()
+    {
+        PlayerPrefs.DeleteAll();
+    }
 }

@@ -22,7 +22,7 @@ public class AdjustInOption : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if((MoveMaster.transform.localPosition - new Vector3(-1280,720,0)).magnitude < 10)
+        if((MoveMaster.transform.localPosition - new Vector3(0,1440,0)).magnitude < 10)
         {
             canAdjust = true;
 
