@@ -336,9 +336,9 @@ public class FumenInfo : MonoBehaviour
                 {
                     //譜面の再生が終わってないとき
 
-                    if (Input.GetKeyDown(KeyCode.Space) && progress > pauze)
+                    if (Input.GetKeyDown(KeyCode.Escape) && progress > pauze)
                     {
-                        StatusText.text = "PAUSE\n<size=40>press [esc] key to quit</size>";
+                        StatusText.text = "PAUSE\n<size=40>press [Q] key to quit</size>";
                         BlackBack.color = new Color(BlackBack.color.r, BlackBack.color.g, BlackBack.color.b, 0.5f);
                         isPause = true;
                         pauze = progress;
@@ -387,7 +387,7 @@ public class FumenInfo : MonoBehaviour
             else
             {
                 //ポーズ中
-                if (Input.GetKeyDown(KeyCode.Space))
+                if (Input.GetKeyDown(KeyCode.Escape))
                 {
                     StatusText.text = "";
                     BlackBack.color = new Color(BlackBack.color.r, BlackBack.color.g, BlackBack.color.b, 0.0f);
@@ -406,7 +406,7 @@ public class FumenInfo : MonoBehaviour
                     progress -= pauseTime;
                     canHitQueue.Clear();
                 }
-                else if (Input.GetKeyDown(KeyCode.Escape))
+                else if (Input.GetKeyDown(KeyCode.Q))
                 {
                     SceneManager.LoadScene("SelectMusic");
                 }
@@ -496,7 +496,7 @@ public class FumenInfo : MonoBehaviour
 
         foreach (KeyCode i in Enum.GetValues(typeof(KeyCode)))
         {
-            if (Convert.ToInt32(i) == 0 || i == KeyCode.Space) continue;
+            if (Convert.ToInt32(i) == 0 || i == KeyCode.Escape) continue;
 
             if (Input.GetKeyDown(i)) ++output;
         }
