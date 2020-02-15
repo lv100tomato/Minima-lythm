@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// スクロールの速度などを調整
+/// </summary>
 public class ScrollWheel : MonoBehaviour
 {
     public float speed = 1.0f;
@@ -17,7 +20,7 @@ public class ScrollWheel : MonoBehaviour
     void Start()
     {
         bar = GetComponent<Scrollbar>();
-        maxIndex = MusicManager.fumenNums();
+        maxIndex = MusicManager.FumenNums();
         if (maxIndex < 0)
         {
             maxIndex = 0;
@@ -35,7 +38,7 @@ public class ScrollWheel : MonoBehaviour
 
         float step = 0;
 
-        maxIndex = MusicManager.fumenNums();
+        maxIndex = MusicManager.FumenNums();
         if (maxIndex < 0)
         {
             maxIndex = 0;
@@ -64,8 +67,6 @@ public class ScrollWheel : MonoBehaviour
                 pos = 1;
             }
         }
-
-        //target = pos;
 
         if (isFirst)
         {

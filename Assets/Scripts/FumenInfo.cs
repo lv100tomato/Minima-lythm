@@ -10,6 +10,9 @@ using System;
 using System.Text;
 using System.Linq;
 
+/// <summary>
+/// FumenDataのデータをもとに、再生しながらノーツのオブジェクトを生成する
+/// </summary>
 public class FumenInfo : MonoBehaviour
 {
 
@@ -34,25 +37,11 @@ public class FumenInfo : MonoBehaviour
     //以下は譜面を読み込む前に操作する
     private static string fumenName = "";   //譜面ファイルのありか
     private static string musicName = "";   //楽曲ファイルのありか
-    private static bool auto = false;   //自動演奏するかどうか
-    private static bool play = false;
-    private static char speed = (char)10;   //ノーツスピードの10倍の値(10なら等倍、5～99)
+    //private static bool auto = false;   //自動演奏するかどうか
     private static int interval = 2000;    //ノーツが発射されてから到達するまでの時間
-    private static int intervalBase = 4000;//上の計算のもとになる数
-    private static int count;   //譜面再生開始位置(ms)
+    private static readonly int intervalBase = 4000;//上の計算のもとになる数
 
-    //以下は譜面を読み込むときに書き込む
-    private static char level = (char)0;    //譜面のレベル
-    private static int shift = 0;   //音源再生開始位置(ms)のずれ(+で遅れる、-で早まる)
-    private static List<int[]> fumen = new List<int[]>();   //譜面データ
-    private static AudioClip music; //Unityで曲を流す準備
     private static bool ready;  //譜面を再生する準備が出来ているかどうか
-    private static FumenData data;  //譜面の基本情報
-    
-    //以下は読み込むときに使う
-    private static bool ok1 = false;
-    private static bool ok2 = false;
-    private static bool ng = false;
 
     //最終的に音源を再生するのは、譜面が再生され始めてから
     //shift - playerShift + interval (ms)後になる
@@ -62,13 +51,12 @@ public class FumenInfo : MonoBehaviour
     private int[] notesRank;    //判定ごとの総数
     private int maxCombo, combo;
 
-    private static int pauseTime = 1000;    //何ms巻き戻すか
+    private static readonly int pauseTime = 1000;    //何ms巻き戻すか
 
     private int pauze = 0;  //ポーズ位置
     private bool isPause = false;   //ポーズ中かどうか
 
     private int outro;
-    //private long mark = 0;   //譜面再生位置(ms)の基準点(BPMが変化するときとかに変更される)
     public List<Note> canHitQueue;//判定ライン内にあるノーツ達
 
     private int score;
@@ -90,97 +78,11 @@ public class FumenInfo : MonoBehaviour
         musicName = newName;
     }
 
-    public static void SetAuto(bool flag)
-    {
-        auto = flag;
-    }
-
-    //public static void setTiming(int timing)
-    //{
-    //    playerShift = timing;
-    //}
-
-    public static void setSpeed(char spd)
-    {
-        speed = spd;
-        interval = 20000 / (int)spd;
-    }
-
-    public static void setLevel(char lv)
-    {
-        level = lv;
-    }
-
-    public static void ResetCount(int pos = 0)
-    {
-        count = pos;
-    }
-
-    public static void PlayFlag(bool flag)
-    {
-        play = flag;
-    }
-
-    public void LoadData()
-    {
-        //譜面を読み込む処理が入る
-        /*
-         *  譜面の仕様について(大体BMSと同じなので違う部分を羅列していく)
-         *  [ヘッダ]
-         *  WAV??はWAV01のみを流す音源として使用。
-         *  STAGEFILEはジャケット画像に使用。
-         *  MIDIFILEやBMPは不使用。
-         *  [メインデータ]
-         *  小節とかの仕様はそのままで
-         *  11～17、21～27のパラメータで指定する値は鳴らす音ではなくノーツの種類
-         *  
-         */
-
-        //曲をDLするのは時間がかかるので並列処理させたい→Coroutineでなんとかできそう？
-        ok1 = false;
-        ok2 = false;
-        ng = false;
-
-
-        /*
-        Parallel.For(0, 3, i =>
-          {
-              switch (i)
-              {
-                  case 0:
-                      //曲を読み込む
-                      //UnityWebRequest dataM = UnityWebRequest.Get(musicName);
-                      //while (!dataM.isDone) ;
-                      //music = dataM.GetAudioClip();
-
-                      StartCoroutine("LoadMusic");
-
-                      ok1 = true;
-                      break;
-                  case 1:
-                      //譜面を読み込む
-                      WWW dataF = new WWW(fumenName);
-                      while (!dataF.isDone) ;
-                      fumen = new List<int[]>();
-
-                      //以下、譜面を読み込んでいく
-
-
-                      ok2 = true;
-                      break;
-                  case 2:
-                      //DL中の演出とか
-
-                      break;
-              }
-          });
-        /**/
-
-        //StartCoroutine(LoadMusic());
-        //StartCoroutine(LoadFumen());
-
-    }
-
+    /// <summary>
+    /// ファイル名をもとに曲を読み込む
+    /// </summary>
+    /// <param name="fileName">ファイル名</param>
+    /// <returns></returns>
     public IEnumerator LoadMusic(string fileName)
     {
         if (!fileName.Contains("://") && !fileName.Contains(":///"))
@@ -208,32 +110,11 @@ public class FumenInfo : MonoBehaviour
     void Start()
     {
         audioS = GetComponent<AudioSource>();
-        //FumenData.readData(karifumen);
-        //FumenData.readNotesData(karifumen);
 
-        //fumenName = Application.streamingAssetsPath + "/end_time_death.bms";
-        //fumenName = Application.streamingAssetsPath + "/dive_K03redezigh.bms";
-        //fumenName = Application.streamingAssetsPath + "/gengaozobt1afo.bme";
-        //fumenName = Application.streamingAssetsPath + "/9-finalbeatmaniamix-.bms";
-        //fumenName = Application.streamingAssetsPath + "/sq_07-01.bms";
-        //fumenName = Application.streamingAssetsPath + "/_sasoribi_7light.bme";
-        //fumenName = Application.streamingAssetsPath + "/_sasoribi_7izigen.bme";
+        FumenData.SetLoadedFalse();
+        StartCoroutine(FumenData.LoadFumen(fumenName)); //譜面データを読み込む
+        StartCoroutine(LoadMusic(musicName));           //曲を読み込む
 
-        //StartCoroutine(LoadMusic(Application.streamingAssetsPath + "/End Time.wav"));
-        //StartCoroutine(LoadMusic(Application.streamingAssetsPath + "/FREEDOM DiVE↓.wav"));
-        //StartCoroutine(LoadMusic(Application.streamingAssetsPath + "/Ｇｅｎｇａｏｚｏ.wav"));
-        //StartCoroutine(LoadMusic(Application.streamingAssetsPath + "/L9-finalbeatmaniamix-.wav"));
-        //StartCoroutine(LoadMusic(Application.streamingAssetsPath + "/千年女王.wav"));
-        //StartCoroutine(LoadMusic(Application.streamingAssetsPath + "/ピアノ協奏曲第１番蠍火 (なんでも吸い込むピンク色のための).wav"));
-        //StartCoroutine(LoadMusic(Application.streamingAssetsPath + "/ピアノ協奏曲第１番蠍火 (なんでも詰め込む神域譜面のための).wav"));
-
-        FumenData.setLoadedFalse();
-        StartCoroutine(FumenData.LoadFumen(fumenName));
-        StartCoroutine(LoadMusic(musicName));
-
-        //while (ftxt == null) ;
-
-        count = 0;
         progress = (interval > 0) ? 0 - interval : 0;
         ready = false;
         first = false;
@@ -261,10 +142,8 @@ public class FumenInfo : MonoBehaviour
         StatusText.text = "Click or Enter to Start";
         StatusText.fontSize = 70;
         ScoreText.text = "";
-        //StatusText.text = Application.streamingAssetsPath;
-        //StatusText.fontSize = 30;
-        updateMulti();
-        updateAdjust();
+        UpdateMulti();
+        UpdateAdjust();
     }
 
     // Update is called once per frame
@@ -291,10 +170,9 @@ public class FumenInfo : MonoBehaviour
                     }
 
                     progress = (int)(audioS.time * 1000) + interval;
-                    count = (int)((float)progress * 60f / 1000f);
                 }
 
-                if (!audioS.isPlaying && FumenData.fumenIsFinished())
+                if (!audioS.isPlaying && FumenData.FumenIsFinished())
                 {
                     //譜面の再生が終わったとき
                     if (outro <= 1200) StatusText.fontSize = outro / 15 + 5;
@@ -322,11 +200,11 @@ public class FumenInfo : MonoBehaviour
                     if (outro < 5000) outro += (int)(Time.deltaTime * 1000);
                     else
                     {
-                        int maxScore = UserData.loadFumenScore(FumenData.getFumenHash());
-                        if (calculateScore() > maxScore)
+                        int maxScore = UserData.LoadFumenScore(FumenData.GetFumenHash());
+                        if (CalculateScore() > maxScore)
                         {
-                            UserData.saveFumenScore(FumenData.getFumenHash(), (int)calculateScore());
-                            UserData.save();
+                            UserData.SaveFumenScore(FumenData.GetFumenHash(), (int)CalculateScore());
+                            UserData.Save();
                             Debug.Log("Score Saved!");
                         }
                         SceneManager.LoadScene("SelectMusic");
@@ -352,7 +230,7 @@ public class FumenInfo : MonoBehaviour
                     }
                 }
 
-                List<NoteInfo> hoge = FumenData.GetNotes(getProgress());
+                List<NoteInfo> hoge = FumenData.GetNotes(GetProgress());
 
                 foreach (NoteInfo i in hoge)
                 {
@@ -362,25 +240,25 @@ public class FumenInfo : MonoBehaviour
                         GameObject newNote = (i.channel < 0) ? Instantiate(Line, new Vector3((i.channel - 16), 15.0f, 0.0f), this.transform.rotation)
                                                             : Instantiate(Note, new Vector3((i.channel - 16), 15.0f, 0.0f), this.transform.rotation);
                         Note newNoteNote = newNote.GetComponent<Note>();
-                        newNoteNote.setFumenInfo(this);
-                        newNoteNote.setNoteInfo(i);
-                        newNoteNote.setBaseMs(i.getTiming());
-                        newNoteNote.setReachTime(interval);
+                        newNoteNote.SetFumenInfo(this);
+                        newNoteNote.SetNoteInfo(i);
+                        newNoteNote.SetBaseMs(i.GetTiming());
+                        newNoteNote.SetReachTime(interval);
                     }
                 }
 
-                int hantei = getNumsOfKeysDown();
+                int hantei = GetNumsOfKeysDown();
 
                 for (int i = 0; i < hantei; ++i)
                 {
                     if (canHitQueue.Count == 0) break;
 
-                    canHitQueue[0].judging();
+                    canHitQueue[0].Judging();
                 }
 
                 if (hantei > 0)
                 {
-                    updateScore();
+                    UpdateScore();
                 }
 
             }
@@ -415,46 +293,56 @@ public class FumenInfo : MonoBehaviour
         }
         else
         {
-            if ((Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Return)) && FumenData.isFumenLoaded)
+            //譜面再生前
+
+            if ((Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Return)) && FumenData.IsFumenLoaded)
             {
                 ready = true;
                 StatusText.text = "";
                 interval = (int)(intervalBase / UserData.IntervalMul);
                 MultiIntervalText.text = "";
                 AdjustTimingText.text = "";
-                updateScore();
+                UpdateScore();
                 progress = (interval > 0) ? 0 - interval : 0;
-                UserData.saveData();
+                UserData.SaveData();
             }
             else if (Input.GetKeyDown(KeyCode.UpArrow))
             {
                 UserData.IntervalMul += 0.1M;
-                updateMulti();
+                UpdateMulti();
             }
             else if (Input.GetKeyDown(KeyCode.DownArrow))
             {
                 UserData.IntervalMul -= 0.1M;
-                updateMulti();
+                UpdateMulti();
             }
             else if (Input.GetKeyDown(KeyCode.RightArrow))
             {
                 UserData.PlayerShift += 1;
-                updateAdjust();
+                UpdateAdjust();
             }
             else if (Input.GetKeyDown(KeyCode.LeftArrow))
             {
                 UserData.PlayerShift -= 1;
-                updateAdjust();
+                UpdateAdjust();
             }
         }
     }
 
-    public int getProgress()
+    /// <summary>
+    /// タイミングをずらした量を考慮した再生位置(ms)
+    /// </summary>
+    /// <returns></returns>
+    public int GetProgress()
     {
         return progress - UserData.PlayerShift;
     }
 
-    public void addNotesRank(int rank)
+    /// <summary>
+    /// 判定ごとにカウントしていく
+    /// </summary>
+    /// <param name="rank">判定の種類</param>
+    public void AddNotesRank(int rank)
     {
         if (rank >= 0 && rank < notesRank.Length)
         {
@@ -490,7 +378,11 @@ public class FumenInfo : MonoBehaviour
         }
     }
 
-    private int getNumsOfKeysDown()
+    /// <summary>
+    /// いくつボタンが押されたかを取得
+    /// </summary>
+    /// <returns>押されたボタンの数</returns>
+    private int GetNumsOfKeysDown()
     {
         int output = 0;
 
@@ -501,30 +393,42 @@ public class FumenInfo : MonoBehaviour
             if (Input.GetKeyDown(i)) ++output;
         }
 
-        //Debug.Log("number of pushed : " + output);
         return output;
     }
 
-    private void updateMulti()
+    /// <summary>
+    /// 再生倍率の文言を更新
+    /// </summary>
+    private void UpdateMulti()
     {
         MultiIntervalText.text = "Speed\n   ↑\nx" + UserData.IntervalMul + "\n   ↓";
     }
 
-    private void updateAdjust()
+    /// <summary>
+    /// タイミング調整の文言を調整
+    /// </summary>
+    private void UpdateAdjust()
     {
         AdjustTimingText.text = "Timing\n←    →\n" + ((UserData.PlayerShift == 0) ? "±" : ((UserData.PlayerShift > 0) ? "+" : "")) + UserData.PlayerShift + "ms";
     }
 
-    private void updateScore()
+    /// <summary>
+    /// スコアの更新
+    /// </summary>
+    private void UpdateScore()
     {
-        ScoreText.text = "Score\n" + calculateScore().ToString("D9");
+        ScoreText.text = "Score\n" + CalculateScore().ToString("D9");
     }
 
-    private long calculateScore()
+    /// <summary>
+    /// スコアの計算
+    /// </summary>
+    /// <returns></returns>
+    private long CalculateScore()
     {
-        if (FumenData.getMaxCombo() > 0)
+        if (FumenData.GetMaxCombo() > 0)
         {
-           return ((score * (long)100000000) / (FumenData.getMaxCombo() * scoreUnit[3]));
+           return ((score * (long)100000000) / (FumenData.GetMaxCombo() * scoreUnit[3]));
         }
         else
         {

@@ -6,11 +6,14 @@ using System.Text;
 using System.Security.Cryptography;
 using UnityEngine;
 
+/// <summary>
+/// BMSファイルからデータを抽出し、必要に応じてデータを渡す
+/// </summary>
 public class FumenData
 {
-    public static int split = 256;
-    public static bool isDataLoaded = false;
-    public static bool isFumenLoaded = false;
+    public static readonly int split = 256;  //ノーツのタイミングの詳細さ
+    public static bool IsDataLoaded { get; private set; } = false;
+    public static bool IsFumenLoaded { get; private set; } = false;
 
     public static int player;    //プレイスタイル(仮)(1～4)
     public static string genre;   //曲のジャンル
@@ -57,6 +60,10 @@ public class FumenData
         ResetProgress();
     }
 
+    /// <summary>
+    /// 文字列で渡された譜面のデータから楽曲情報などを取得する
+    /// </summary>
+    /// <param name="Text"></param>
     public static void ReadData(string Text)
     {
         
@@ -81,7 +88,7 @@ public class FumenData
                           edit = edit.Trim();
 
                           player = int.Parse(edit);
-                          Debug.Log("PLAYER : " + player);
+                          //Debug.Log("PLAYER : " + player);
                       }
                       break;
                   case 1:
@@ -96,7 +103,7 @@ public class FumenData
                           edit = edit.Trim();
 
                           genre = edit;
-                          Debug.Log("GENRE : " + genre);
+                          //Debug.Log("GENRE : " + genre);
                       }
                       break;
                   case 2:
@@ -111,7 +118,7 @@ public class FumenData
                           edit = edit.Trim();
 
                           title = edit;
-                          Debug.Log("TITLE : " + title);
+                          //Debug.Log("TITLE : " + title);
                       }
                       break;
                   case 3:
@@ -126,7 +133,7 @@ public class FumenData
                           edit = edit.Trim();
 
                           artist = edit;
-                          Debug.Log("ARTIST : " + artist);
+                          //Debug.Log("ARTIST : " + artist);
                       }
                       break;
                   case 4:
@@ -141,7 +148,7 @@ public class FumenData
                           edit = edit.Trim();
 
                           bpm = float.Parse(edit);
-                          Debug.Log("BPM : " + bpm);
+                          //Debug.Log("BPM : " + bpm);
                       }
                       break;
                   case 5:
@@ -156,7 +163,7 @@ public class FumenData
                           edit = edit.Trim();
 
                           playlevel = int.Parse(edit);
-                          Debug.Log("PLAYLEVEL : " + playlevel);
+                          //Debug.Log("PLAYLEVEL : " + playlevel);
                       }
                       break;
                   case 6:
@@ -171,7 +178,7 @@ public class FumenData
                           edit = edit.Trim();
 
                           rank = int.Parse(edit);
-                          Debug.Log("RANK : " + rank);
+                          //Debug.Log("RANK : " + rank);
                       }
                       break;
                   case 7:
@@ -186,7 +193,7 @@ public class FumenData
                           edit = edit.Trim();
 
                           volwav = int.Parse(edit);
-                          Debug.Log("VOLWAV : " + volwav);
+                          //Debug.Log("VOLWAV : " + volwav);
                       }
                       break;
                   case 8:
@@ -201,7 +208,7 @@ public class FumenData
                           edit = edit.Trim();
 
                           wav = edit;
-                          Debug.Log("WAV01 : " + wav);
+                          //Debug.Log("WAV01 : " + wav);
                       }
                       break;
                   case 9:
@@ -216,11 +223,9 @@ public class FumenData
                           edit = edit.Trim();
 
                           stagefile = edit;
-                          Debug.Log("STAGEFILE : " + stagefile);
+                          //Debug.Log("STAGEFILE : " + stagefile);
                       }
                       break;
-                  //case 10:
-                  //    break;
                   default:
                       break;
 
@@ -229,7 +234,6 @@ public class FumenData
 
         //ハッシュ値を求める
         hash = "";
-        //byte[] byteFumen = System.Text.Encoding.UTF8.GetBytes(Text);
         SHA1CryptoServiceProvider encoder = new SHA1CryptoServiceProvider();
         byte[] encoded = encoder.ComputeHash(System.Text.Encoding.UTF8.GetBytes(Text));
         for(int i = 0; i < encoded.Length; ++i)
@@ -238,11 +242,15 @@ public class FumenData
         }
         encoder.Clear();
 
-        isDataLoaded = true;
+        IsDataLoaded = true;
 
         return;
     }
 
+    /// <summary>
+    /// 文字列で渡された譜面のデータからノーツの情報を取得する
+    /// </summary>
+    /// <param name="Text"></param>
     public static void ReadNotesData(string Text)
     {
         List<NoteInfo> karinotes = new List<NoteInfo>();
@@ -260,29 +268,26 @@ public class FumenData
 
             char decide = Text.Substring(start + 1, 1)[0];
 
-            //Debug.Log("Searching " + Text.Substring(start, 6) + "... on " + start + " byte.");
-
             if (Text.Substring(start - 1,1) == "\n" && decide >= '0' && decide <= '9')
             {
-                //Debug.Log("hit!");
                 int i, j;
-                int.TryParse(Text.Substring(start + 1, 3), out i);
-                int.TryParse(Text.Substring(start + 4, 2), out j);
+                int.TryParse(Text.Substring(start + 1, 3), out i);  //何小節目か
+                int.TryParse(Text.Substring(start + 4, 2), out j);  //チャンネル
 
-                start = start + 7;
-                end = Text.IndexOf("\n", start);
-                if (end < 0) end = Text.Length;
+                start = start + 7;  //検索開始位置をずらす
+                end = Text.IndexOf("\n", start);    //行の終わりを取得
+                if (end < 0) end = Text.Length;     //行の終わりがファイルの最後だった場合
 
-                edit = Text.Substring(start, end - start);
+                edit = Text.Substring(start, end - start);  //行の情報を表す文字列を抽出
                 edit.Trim();
 
-                d = edit.Length / 2;
+                d = edit.Length / 2;    //小節の分割数
 
                 if (j != 2)
                 {
                     while (edit.Length >= 2)
                     {
-                        int hoge = 0;
+                        int hoge; //パラメータになる数値
                         if (j == 3)
                         {
                             hoge = int.Parse(edit.Substring(0, 2), System.Globalization.NumberStyles.HexNumber);
@@ -306,117 +311,22 @@ public class FumenData
             }
         }
 
-        /*
-        Parallel.For(0, 1000, i =>
-        {
-            Parallel.For(0, 100, j =>
-            {
-
-                int start, end, d;
-                string edit;
-
-                start = Text.IndexOf("#" + i.ToString("d3") + j.ToString("d2") + ":");
-
-                if (start >= 0)
-                {
-                    //Debug.Log("searching (" + i + ", " + j + ")");
-                    start = start + 7;
-                    end = Text.IndexOf("\n", start);
-                    if (end < 0) end = Text.Length;
-
-                    edit = Text.Substring(start, end - start);
-                    edit.Trim();
-
-                    d = edit.Length / 2;
-
-                    if (j != 2)
-                    {
-                        while (edit.Length >= 2)
-                        {
-                            int hoge = 0;
-                            if (j == 3)
-                            {
-                                hoge = int.Parse(edit.Substring(0, 2), System.Globalization.NumberStyles.HexNumber);
-                            }
-                            else
-                            {
-                                hoge = StringToIntBMS(edit.Substring(0, 2));
-                            }
-                            if (hoge != 0) karinotes.Add(new NoteInfo(i, d, d - (edit.Length / 2), j, hoge));
-                            edit = edit.Substring(2);
-                        }
-                    }
-                    else
-                    {
-                        karinotes.Add(new NoteInfo(i, 1, 0, j, (int)(float.Parse(edit.Substring(0)) * split)));
-                    }
-                }
-            });
-        });
-        */
-
-        /*
-        int start, end, d;
-        string edit;
-        
-        for (int i = 0; i < 1000; ++i)
-        {
-            for(int j = 1; j < 100; ++j)
-            {
-                start = Text.IndexOf("#" + i.ToString("d3") + j.ToString("d2") + ":");
-
-                if (start >= 0)
-                {
-                    //Debug.Log("searching (" + i + ", " + j + ")");
-                    start = start + 7;
-                    end = Text.IndexOf("\n", start);
-                    if (end < 0) end = Text.Length;
-
-                    edit = Text.Substring(start, end - start);
-                    edit.Trim();
-
-                    d = edit.Length / 2;
-
-                    if (j != 2)
-                    {
-                        while (edit.Length >= 2)
-                        {
-                            int hoge = 0;
-                            if(j == 3)
-                            {
-                                hoge = int.Parse(edit.Substring(0, 2), System.Globalization.NumberStyles.HexNumber);
-                            }
-                            else
-                            {
-                                hoge = StringToIntBMS(edit.Substring(0, 2));
-                            }
-                            if (hoge != 0)karinotes.Add(new NoteInfo(i, d, d - (edit.Length / 2), j, hoge));
-                            edit = edit.Substring(2);
-                        }
-                    }
-                    else
-                    {
-                        karinotes.Add(new NoteInfo(i, 1, 0, j, (int)(float.Parse(edit.Substring(0)) * split)));
-                    }
-                }
-            }
-        }
-
-        */
-
         notes = karinotes.ToArray();
-        NotesBubbleSort();
-        //NotesQuickSort();
+        NotesOddEvenSort();
+        //NotesBubbleSort();
         SetNotesTiming();
 
         ResetProgress();
 
-        isFumenLoaded = true;
+        IsFumenLoaded = true;
         finished = false;
 
         return;
     }
 
+    /// <summary>
+    /// ノードをバブルソートする
+    /// </summary>
     private static void NotesBubbleSort()
     {
         bool sorted;
@@ -443,89 +353,91 @@ public class FumenData
         Debug.Log("Sorted");
     }
 
-    private static void NotesQuickSort()
+    /// <summary>
+    /// ノードを奇偶転置ソートする
+    /// </summary>
+    private static void NotesOddEvenSort()
     {
-        NotesQuickSort(0, notes.Length - 1);
+        bool[] sorted = new bool[notes.Length - 1];
+        bool allSorted = false;
+
+        for(int i=0;i<sorted.Length; ++i)
+        {
+            sorted[i] = false;
+        }
+
+        do
+        {
+            //Debug.Log("Not Sorted");
+
+            Parallel.For(0, notes.Length / 2, i =>
+            {
+                if (sorted[i * 2] == false)
+                {
+                    if (notes[i * 2] > notes[i * 2 + 1])
+                    {
+                        NoteInfo mov = notes[i * 2];
+                        notes[i * 2] = notes[i * 2 + 1];
+                        notes[i * 2 + 1] = mov;
+
+                        sorted[i * 2] = false;
+                        if (i * 2 + 1 < sorted.Length) sorted[i * 2 + 1] = false;
+                        if (i * 2 - 1 >= 0           ) sorted[i * 2 - 1] = false;
+                    }
+                    else
+                    {
+                        sorted[i * 2] = true;
+                    }
+                }
+            });
+
+            Parallel.For(0, (notes.Length - 1)/ 2, i =>
+            {
+                if (sorted[i * 2 + 1] == false)
+                {
+                    if (notes[i * 2 + 1] > notes[i * 2 + 2])
+                    {
+                        NoteInfo mov = notes[i * 2 + 1];
+                        notes[i * 2 + 1] = notes[i * 2 + 2];
+                        notes[i * 2 + 2] = mov;
+
+                        sorted[i * 2 + 1] = false;
+                        if (i * 2 + 2 < sorted.Length) sorted[i * 2 + 2] = false;
+                        if (i * 2 - 0 >= 0           ) sorted[i * 2 - 0] = false;
+                    }
+                    else
+                    {
+                        sorted[i * 2 + 1] = true;
+                    }
+                }
+            });
+
+            allSorted = true;
+            for(int i=0; i<sorted.Length; ++i)
+            {
+                if(sorted[i] == false)
+                {
+                    allSorted = false;
+                    break;
+                }
+            }
+        } while (!allSorted);
+
         Debug.Log("Sorted");
     }
 
-    private static void NotesQuickSort(int start, int end)
-    {
-        Debug.Log("Not Sorted");
-        NoteInfo mov;
-
-        if (end - start < 1)
-        {
-            return;
-        }
-        else if (end - start == 1)
-        {
-            if (notes[start] > notes[start + 1])
-            {
-                mov = notes[start];
-                notes[start] = notes[start + 1];
-                notes[start + 1] = mov;
-            }
-
-            return;
-        }
-
-        int n = start + 1;
-        int m = end;
-
-        while (true)
-        {
-            while (notes[start] >= notes[n])
-            {
-                if (n == m - 1) break;
-                ++n;
-            }
-            while (notes[start] < notes[m])
-            {
-                if (n == m - 1) break;
-                --m;
-            }
-
-            if (notes[n] > notes[m])
-            {
-                mov = notes[n];
-                notes[n] = notes[m];
-                notes[m] = mov;
-            }
-
-            if (n == m - 1) break;
-        }
-
-        mov = notes[n];
-        notes[n] = notes[start];
-        notes[start] = mov;
-
-        Parallel.For(0, 2, i =>
-        {
-            if(i == 0)
-            {
-                NotesQuickSort(start, n - 1);
-            }
-            else
-            {
-
-                NotesQuickSort(n + 1, end);
-            }
-        });
-
-        return;
-    }
 
     public static void ResetProgress()
     {
         progress = 0;
         noteIndex = 0;
-        //measureProg1000 = 0;
-        //measure = 0;
-        //percent = 64;
-        //nowBpm = bpm;
     }
 
+    /// <summary>
+    /// 前回に指定した時間から新たに指定した時間までのノーツを得る
+    /// </summary>
+    /// <param name="dest">新たに指定する時間</param>
+    /// <returns>ノーツのリスト</returns>
     public static List<NoteInfo> GetNotes(int dest)
     {
         List<NoteInfo> output = new List<NoteInfo>();
@@ -535,7 +447,7 @@ public class FumenData
         {
             now = realNotes[noteIndex];
 
-            if (now.getTiming() > dest) break;
+            if (now.GetTiming() > dest) break;
 
             output.Add(now);
             ++noteIndex;
@@ -543,7 +455,7 @@ public class FumenData
 
         if(noteIndex >= realNotes.Length)
         {
-            finished = true;
+            finished = true;    //もうこれ以上ノーツはない
         }
 
         progress = dest;
@@ -551,55 +463,56 @@ public class FumenData
         return output;
     }
 
+    /// <summary>
+    /// ノーツのデータから譜面として流すものを生成し、ノーツごとの出現位置を計算する
+    /// </summary>
     private static void SetNotesTiming()
     {
-        long measureProg1000 = 0;
-        int measure = 0;
-        long reachMeasureProg1000 = 0;
-        int percent = split;
-        float nowBpm = bpm;
+        //仮想的に譜面を再生しながら時間を計測するイメージ
 
-        List<NoteInfo> output = new List<NoteInfo>();
-        NoteInfo now;
+        long measureProg1000 = 0;   //小節頭の位置(μs)
+        int measure = 0;            //再生中の小節
+        long reachMeasureProg1000 = 0;  //再生位置(μs)
+        int percent = split;            //小節の大きさ
+        float nowBpm = bpm;             //テンポ
+
+        List<NoteInfo> output = new List<NoteInfo>();   //ノーツを格納するリスト
+        NoteInfo now;   //処理を行うノーツ
 
         for(int i = 0;i < notes.Length; ++i)
         {
             now = notes[i];
-            //now.debugging();
 
             {
-
-                while (reachMeasureProg1000 < measureProg1000 + now.msInMes(nowBpm, percent) * 1000)
+                while (reachMeasureProg1000 < measureProg1000 + now.MsInMes(nowBpm, percent) * 1000)
                 {
-                    //ノーツのタイミングをセット
+                    //拍線を追加
                     NoteInfo changemes = new NoteInfo(now.measure, 0, 1, -2, 0);
-                    changemes.setTiming((int)(reachMeasureProg1000 / 1000));
+                    changemes.SetTiming((int)(reachMeasureProg1000 / 1000));
                     output.Add(changemes);
 
-                    reachMeasureProg1000 += (long)((((double)60 * 1000 / (double)nowBpm) * ((double)split / split)) * 1000);
+                    reachMeasureProg1000 += (long)((((double)60 * 1000 / (double)nowBpm) * ((double)split / split)) * 1000); //1拍分すすめる
                 }
 
-                if (now.measure > measure)
+                if (now.measure > measure)  //小節が変わったとき
                 {
                     NoteInfo changemes;
 
                     //再生した小節の再生位置(us)の更新
-                    measureProg1000 += (long)(((double)60 * 1000 * 4 / (double)nowBpm) * ((double)percent / split)) * 1000;
-                    measureProg1000 += (long)(((double)60 * 1000 * 4 / (double)nowBpm) * ((double)split / split)) * 1000 * (now.measure - measure - 1);
+                    measureProg1000 += (long)(((double)60 * 1000 * 4 / (double)nowBpm) * ((double)percent / split)) * 1000; //1小節ぶん進める
+                    measureProg1000 += (long)(((double)60 * 1000 * 4 / (double)nowBpm) * ((double)split / split)) * 1000 * (now.measure - measure - 1); //現在の小節まで進める
 
-                    while (reachMeasureProg1000 < measureProg1000 + now.msInMes(nowBpm, percent) * 1000)
+                    while (reachMeasureProg1000 < measureProg1000 + now.MsInMes(nowBpm, percent) * 1000)
                     {
-                        //ノーツのタイミングをセット
+                        //拍線を追加
                         changemes = new NoteInfo(now.measure, 0, 1, -2, 0);
-                        changemes.setTiming((int)(reachMeasureProg1000 / 1000));
+                        changemes.SetTiming((int)(reachMeasureProg1000 / 1000));
                         output.Add(changemes);
 
-                        reachMeasureProg1000 += (long)((((double)60 * 1000 / (double)nowBpm) * ((double)split / split)) * 1000);
+                        reachMeasureProg1000 += (long)((((double)60 * 1000 / (double)nowBpm) * ((double)split / split)) * 1000); //1拍分すすめる
                     }
 
                     reachMeasureProg1000 = measureProg1000;
-
-                    //Debug.Log("mes + " + (int)(((double)60 * 1000 * 4 / (double)nowBpm) * ((double)percent / split)));
 
                     //再生している小節の更新
                     measure = now.measure;
@@ -607,9 +520,9 @@ public class FumenData
                     //小節の長さを元に戻す
                     percent = split;
 
-                    //ノーツのタイミングをセット
+                    //小節線を追加
                     changemes = new NoteInfo(now.measure, 0, 1, -1, 0);
-                    changemes.setTiming((int)(((double)now.msInMes(nowBpm, percent) * 1000 + measureProg1000) / 1000));
+                    changemes.SetTiming((int)(((double)now.MsInMes(nowBpm, percent) * 1000 + measureProg1000) / 1000));
                     output.Add(changemes);
                 }
 
@@ -621,20 +534,16 @@ public class FumenData
                 else if (now.channel == 3)
                 {
                     //BPMの変更
-                    measureProg1000 += (long)(now.msInMes(nowBpm, percent)) * 1000;
-
-                    //now.debugging();
-                    //Debug.Log("bpm : " + nowBpm + " -> " + now.parameter + " at " + measureProg1000/1000 + "ms");
+                    measureProg1000 += (long)(now.MsInMes(nowBpm, percent)) * 1000;
 
                     nowBpm = now.parameter;
-                    measureProg1000 -= (long)(now.msInMes(nowBpm, percent)) * 1000;
+                    measureProg1000 -= (long)(now.MsInMes(nowBpm, percent)) * 1000; //小節頭の更新
 
                 }
                 else
                 {
-                    //Debug.Log("msInMes" + now.msInMes(nowBpm, percent));
                     //ノーツのタイミングをセット
-                    now.setTiming((int)(((double)now.msInMes(nowBpm, percent) * 1000 + measureProg1000) / 1000));
+                    now.SetTiming((int)(((double)now.MsInMes(nowBpm, percent) * 1000 + measureProg1000) / 1000));
 
                     if ((now.channel >= 10 && now.channel <= 19) || (now.channel >= 50 && now.channel <= 59))
                     {
@@ -649,6 +558,11 @@ public class FumenData
         realNotes = output.ToArray();
     }
 
+    /// <summary>
+    /// BMS形式の記法から数値に変換する
+    /// </summary>
+    /// <param name="hoge">文字列</param>
+    /// <returns>数値</returns>
     private static int StringToIntBMS(string hoge)
     {
         int output = 0;
@@ -778,22 +692,39 @@ public class FumenData
         return output;
     }
 
-    public static void setLoadedFalse()
+    /// <summary>
+    /// 譜面読み込みの進捗をリセットする
+    /// </summary>
+    public static void SetLoadedFalse()
     {
-        isDataLoaded = false;
-        isFumenLoaded = false;
+        IsDataLoaded = false;
+        IsFumenLoaded = false;
     }
 
-    public static int getMaxCombo()
+    /// <summary>
+    /// 最大コンボ数を得る
+    /// </summary>
+    /// <returns>最大コンボ数</returns>
+    public static int GetMaxCombo()
     {
         return maxCombo;
     }
 
-    public static bool fumenIsFinished()
+    /// <summary>
+    /// GetNotesで得られる全てのノーツを読み込んだかどうか
+    /// </summary>
+    /// <returns></returns>
+    public static bool FumenIsFinished()
     {
         return finished;
     }
 
+    /// <summary>
+    /// ファイル名から譜面情報を読み取る
+    /// </summary>
+    /// <param name="fileName">ファイル名</param>
+    /// <param name="isOnlyLoadData">ヘッダのみ読み込むかどうか</param>
+    /// <returns></returns>
     public static IEnumerator LoadFumen(string fileName, bool isOnlyLoadData = false)
     {
         if (!fileName.Contains("://") && !fileName.Contains(":///"))
@@ -815,7 +746,11 @@ public class FumenData
         if (!isOnlyLoadData) FumenData.ReadNotesData(txt);
     }
 
-    public static string getFumenHash()
+    /// <summary>
+    /// 譜面データから得られるハッシュ文字列を取得する
+    /// </summary>
+    /// <returns>文字列</returns>
+    public static string GetFumenHash()
     {
         return hash;
     }

@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 選曲に使うボタン
+/// </summary>
 public class Button : MonoBehaviour
 {
     private MusicManager manager;
@@ -33,7 +36,7 @@ public class Button : MonoBehaviour
     {
         if(manager != null && id >= 0)
         {
-            manager.startGame(id);
+            manager.StartGame(id);
         }
     }
 }

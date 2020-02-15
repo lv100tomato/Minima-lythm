@@ -4,6 +4,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
+/// <summary>
+/// ボタンに対応する挙動を行う
+/// </summary>
 public class TitleButton : MonoBehaviour
 {
     public enum Act
@@ -66,7 +69,7 @@ public class TitleButton : MonoBehaviour
                 transform.parent.gameObject.GetComponent<UIMover>().MoveTo(new Vector2(-2560, 720));
                 break;
             case Act.finalDeleteAll:
-                UserData.deleteAll();
+                UserData.DeleteAll();
                 SceneManager.LoadScene("TitleScene");
                 break;
 

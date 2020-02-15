@@ -14,7 +14,7 @@ public class AdjustInOption : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        UserData.loadData();
+        UserData.LoadData();
         updateText();
         canAdjust = false;
     }
@@ -51,7 +51,7 @@ public class AdjustInOption : MonoBehaviour
         {
             if (canAdjust)
             {
-                UserData.saveData();
+                UserData.SaveData();
             }
 
             canAdjust = false;

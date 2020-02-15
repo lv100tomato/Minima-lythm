@@ -4,10 +4,10 @@ using UnityEngine;
 
 public class UserData
 {
-    private static string[] keysName = { "playerShift", "intervalMul" };
+    private static readonly string[] keysName = { "playerShift", "intervalMul" };
     private static int playerShift = 0; //プレイヤー側で決めるノーツタイミングのずれ(+で遅れる、-で早まる)
-    private static int mulMul = 10;
-    private static int intervalMul = 1 * mulMul;//(1/mulMul)速度倍率
+    private static int mulMul = 10; //ノーツスピードの10倍の値(10なら等倍、5～99)
+    private static int intervalMul = 1 * mulMul;    //(1/mulMul)速度倍率
 
     public static int PlayerShift {
         get => playerShift;
@@ -47,34 +47,34 @@ public class UserData
         }
     }
 
-    public static void loadData()
+    public static void LoadData()
     {
         playerShift = PlayerPrefs.GetInt(keysName[0], 0);
         intervalMul = PlayerPrefs.GetInt(keysName[1], 20);
     }
 
-    public static int loadFumenScore(string hash)
+    public static int LoadFumenScore(string hash)
     {
         return PlayerPrefs.GetInt(hash, 0);
     }
 
-    public static void saveData()
+    public static void SaveData()
     {
         PlayerPrefs.SetInt(keysName[0], playerShift);
         PlayerPrefs.SetInt(keysName[1], intervalMul);
     }
 
-    public static void saveFumenScore(string hash, int score)
+    public static void SaveFumenScore(string hash, int score)
     {
         PlayerPrefs.SetInt(hash, score);
     }
 
-    public static void save()
+    public static void Save()
     {
         PlayerPrefs.Save();
     }
 
-    public static void deleteAll()
+    public static void DeleteAll()
     {
         PlayerPrefs.DeleteAll();
     }

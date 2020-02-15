@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+/// <summary>
+/// ボタンに対応する挙動を行う
+/// </summary>
 public class SelectMusicButton : MonoBehaviour
 {
     public enum Act
@@ -33,8 +36,8 @@ public class SelectMusicButton : MonoBehaviour
         switch (action)
         {
             case Act.start:
-                UserData.loadData();
-                Manager.GetComponent<MusicManager>().moveToGameScene();
+                UserData.LoadData();
+                Manager.GetComponent<MusicManager>().MoveToGameScene();
                 break;
             case Act.option:
                 break;
@@ -42,7 +45,7 @@ public class SelectMusicButton : MonoBehaviour
                 SceneManager.LoadScene("TitleScene");
                 break;
             case Act.back:
-                Manager.GetComponent<MusicManager>().backToSelect();
+                Manager.GetComponent<MusicManager>().BackToSelect();
                 break;
         }
     }

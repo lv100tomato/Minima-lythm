@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// UIを滑らかに動かす
+/// </summary>
 public class UIMover : MonoBehaviour
 {
     public float speed = 1.0f; 

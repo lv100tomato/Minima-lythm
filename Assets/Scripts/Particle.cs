@@ -3,10 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// エフェクトのパーティクル
+/// </summary>
 public class Particle : MonoBehaviour
 {
     private float speed;
-    private float size = 0.15f;
+    private readonly float size = 0.15f;
     private int leftTime;
     private float progress;
     private Vector3 startPosition;
@@ -34,15 +37,14 @@ public class Particle : MonoBehaviour
         {
             transform.position = new Vector3(startPosition.x, startPosition.y + speed * 16 * (progress - progress * progress / (leftTime * 2)) / leftTime);
             transform.localScale = new Vector3(size * (leftTime - progress) / leftTime, size * (leftTime - progress) / leftTime);
-            //speed *= dim;
-            //size *= dim;
         }
-
-
-
     }
 
-    public void setcolor(Color col)
+    /// <summary>
+    /// 色を指定する
+    /// </summary>
+    /// <param name="col"></param>
+    public void Setcolor(Color col)
     {
         GetComponent<SpriteRenderer>().color = new Color(col.r / 4 + 0.25f, col.g / 4 + 0.25f, col.b / 4 + 0.25f);
     }
